@@ -143,7 +143,7 @@ namespace Desafio_DeMaria
         private Livro_Registro getDadosLivro()
         {
             livro = new Livro_Registro(
-            cboLivroRegistro.SelectedText,
+            cboLivroRegistro.Text,
             Convert.ToInt32(txtNumLivro.Text),
             Convert.ToInt32(txtNumPagina.Text),
             Convert.ToInt32(txtNumRegistro.Text));

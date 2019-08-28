@@ -104,6 +104,7 @@ $$
 language plpgsql;
 --==========================================================
 --Função de consulta Recem Nascido POR NOME!
+select * from pesquisaNomeRN('Gabriel');
 CREATE OR REPLACE FUNCTION pesquisaNomeRN(_pesquisa varchar(20))
 returns table(
 	Nome varchar(50),
@@ -117,9 +118,11 @@ returns table(
 $$
 begin
 	return query
-	SELECT r.nome, r.data_nascimento, r.hora_nascimento,  s.descricao, r.dnvdo, p.nome, p1.nome
+	SELECT r.nome, r.data_nascimento, r.hora_nascimento,  s.descricao, tl.descricao, l.numero_livro,l.numero_pagina, l.numero_registro, r.dnvdo, p.nome, p1.nome
 	FROM Recem_Nascido AS r
 	INNER JOIN Sexo AS s ON r.id_sexo = s.id
+	INNER JOIN livro AS l on l.id_rn = r.id
+	INNER JOIN tipo_livro AS tl ON 
 	INNER JOIN Parentes AS p ON r.id = p.id_rn and p.id_parentesco = 1
 	INNER JOIN Parentes as p1 ON r.id = p1.id_rn and p1.id_parentesco = 2	
 	WHERE r.nome like '%' || _pesquisa || '%';

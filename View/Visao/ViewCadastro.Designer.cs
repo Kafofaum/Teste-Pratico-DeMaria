@@ -365,7 +365,7 @@
             // 
             this.chkPrazo.AutoSize = true;
             this.chkPrazo.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkPrazo.Location = new System.Drawing.Point(663, 246);
+            this.chkPrazo.Location = new System.Drawing.Point(663, 288);
             this.chkPrazo.Name = "chkPrazo";
             this.chkPrazo.Size = new System.Drawing.Size(148, 19);
             this.chkPrazo.TabIndex = 19;
@@ -378,7 +378,7 @@
             this.btnSalvar.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnSalvar.ForeColor = System.Drawing.Color.LightGray;
             this.btnSalvar.Image = global::View.Properties.Resources.btnCadastro;
-            this.btnSalvar.Location = new System.Drawing.Point(713, 274);
+            this.btnSalvar.Location = new System.Drawing.Point(713, 316);
             this.btnSalvar.Name = "btnSalvar";
             this.btnSalvar.Size = new System.Drawing.Size(43, 39);
             this.btnSalvar.TabIndex = 20;
