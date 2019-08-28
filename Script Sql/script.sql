@@ -1,7 +1,3 @@
--- SCHEMA: public
-
---DROP SCHEMA public CASCADE;
-
 CREATE SCHEMA public
     AUTHORIZATION postgres;
 
@@ -77,10 +73,10 @@ CREATE TABLE IF NOT EXISTS Parentes (
 );
 
 ALTER TABLE Recem_Nascido ADD FOREIGN KEY(ID_Sexo) REFERENCES Sexo (ID);
---==============================================================
---============================FUNÇÕES===========================
---==============================================================
---========================CONSULTA PARENTES=====================
+--===================================================================================================================
+--============================FUNÇÕES================================================================================
+--===================================================================================================================
+--========================CONSULTA PARENTES==========================================================================
 CREATE OR REPLACE FUNCTION pesquisaParente(_pesquisa varchar(20))
 returns table(
 	Nome varchar(50),
@@ -88,7 +84,7 @@ returns table(
 	Idade INT,
 	Uf varchar(10),
 	Naturalidade varchar(10),
-	Rn_nome varchar(50)
+	Filho varchar(50)
 )as
 $$
 begin
@@ -102,15 +98,19 @@ begin
 end
 $$
 language plpgsql;
---==========================================================
---Função de consulta Recem Nascido POR NOME!
-select * from pesquisaNomeRN('Gabriel');
+DROP FUNCTION pesquisaparente(character varying)
+--====================================================================================================================
+--=======================================Função de consulta Recem Nascido POR NOME====================================
 CREATE OR REPLACE FUNCTION pesquisaNomeRN(_pesquisa varchar(20))
 returns table(
 	Nome varchar(50),
 	Data_Nascimento varchar(10),
 	Hora_Nascimento varchar(10),
 	Sexo varchar(10),
+	Tipo_Livro varchar(10),
+	Numero_Livro int,
+	Numero_Pagina int,
+	Numero_Registro int,
 	DnvDo varchar(20),
 	Pai varchar(50),
 	Mae varchar(50)
@@ -122,16 +122,46 @@ begin
 	FROM Recem_Nascido AS r
 	INNER JOIN Sexo AS s ON r.id_sexo = s.id
 	INNER JOIN livro AS l on l.id_rn = r.id
-	INNER JOIN tipo_livro AS tl ON 
+	INNER JOIN tipo_livro AS tl ON tl.id = l.id_tipo
 	INNER JOIN Parentes AS p ON r.id = p.id_rn and p.id_parentesco = 1
 	INNER JOIN Parentes as p1 ON r.id = p1.id_rn and p1.id_parentesco = 2	
 	WHERE r.nome like '%' || _pesquisa || '%';
 end
 $$
 language plpgsql;
---==================================================================================================
---=============================================Função cadastrar todos===============================
---==========================================INSERT Recem Nascido ++ LIVRO===========================
+
+--====================================================================================================================================
+--=================================================PESQUISA DE RN POR DNV / DO========================================================
+CREATE OR REPLACE FUNCTION pesquisaDnvDo(_pesquisa varchar(20))
+returns table(
+	Nome varchar(50),
+	Data_Nascimento varchar(10),
+	Hora_Nascimento varchar(10),
+	Sexo varchar(10),
+	Tipo_Livro varchar(10),
+	Numero_Livro int,
+	Numero_Pagina int,
+	Numero_Registro int,
+	DnvDo varchar(20),
+	Pai varchar(50),
+	Mae varchar(50)
+)as
+$$
+begin
+	return query
+	SELECT r.nome, r.data_nascimento, r.hora_nascimento,  s.descricao, tl.descricao, l.numero_livro,l.numero_pagina, l.numero_registro, r.dnvdo, p.nome, p1.nome
+	FROM Recem_Nascido AS r
+	INNER JOIN Sexo AS s ON r.id_sexo = s.id
+	INNER JOIN livro AS l on l.id_rn = r.id
+	INNER JOIN tipo_livro AS tl ON tl.id = l.id_tipo
+	INNER JOIN Parentes AS p ON r.id = p.id_rn and p.id_parentesco = 1
+	INNER JOIN Parentes as p1 ON r.id = p1.id_rn and p1.id_parentesco = 2	
+	WHERE r.dnvdo = _pesquisa;
+end
+$$
+language plpgsql;
+--==================================================================================================================================================
+--=================================================INSERT Recem Nascido ++ LIVRO====================================================================
 CREATE OR REPLACE FUNCTION insertRecemNascido(_nome VARCHAR(50), _dt_nascimento varchar(20), _hora_nascimento VARCHAR(20), _id_sexo INT, _DNVDO VARCHAR(20))
 RETURNS VOID AS
 $$
@@ -144,9 +174,8 @@ begin
 end
 $$
 language plpgsql;
-
---==================================================================================================
---===============================================INSERT Livro=======================================
+--====================================================================================================================
+--===============================================INSERT Livro=========================================================
 CREATE OR REPLACE FUNCTION insertLivro(_id_tipo INT, _n_pagina INT, _n_registro INT, _n_livro INT)
 RETURNS VOID AS
 $$
@@ -159,8 +188,8 @@ begin
 end
 $$
 language plpgsql;
---==================================================================================================
---=============================================INSERT PARENTESCO====================================
+--=====================================================================================================================
+--=============================================INSERT PARENTESCO=======================================================
 CREATE OR REPLACE FUNCTION insertParentesco(_nome VARCHAR(50), _dt_nascimento VARCHAR(20), _idade INT, _uf VARCHAR(50), _naturalidade VARCHAR(50), _id_parentesco INT)
 RETURNS VOID AS	
 $$
@@ -170,8 +199,8 @@ begin
 end
 $$
 language plpgsql;
-
---======================INSERT NATURALIDADE==========================
+--======================================================================================================================
+--======================================================INSERT NATURALIDADE=============================================
 CREATE OR REPLACE FUNCTION insertNaturalidade(_naturalidade VARCHAR(50))
 RETURNS VOID AS
 $$
@@ -185,8 +214,8 @@ end
 $$
 language plpgsql;
 
---==============================================================
---======================INSERT PARENTE==========================
+--==================================================================================================================================
+--============================================================INSERT PARENTE========================================================
 CREATE OR REPLACE FUNCTION insertParente(_nome VARCHAR(50), _dt_nascimento VARCHAR(20), _idade INT, _id_uf INT, _id_naturalidade INT, _id_parentesco INT, _id_rn INT)
 RETURNS VOID AS
 $$

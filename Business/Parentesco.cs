@@ -9,7 +9,7 @@ namespace Database
 {
     public class Parentesco
     {
-        RecemNascido r;
+        RecemNascido rn;
 
         private String nome;
         private String data_nascimento;
@@ -43,14 +43,15 @@ namespace Database
             
         }
 
+        //Métodos para calculo de idade dos parentes
         private int calculaIdadePai()
         {
             int idadePai;
-            String anoNascimento = Convert.ToString(data_nascimento).Remove(0, 6);
-            idadePai = DateTime.Now.Year - Convert.ToInt32(anoNascimento);
+            String anoNascimento = Convert.ToString(rn.DataRegistro);
+            idadePai = Convert.ToInt32(anoNascimento) - DateTime.Now.Year;
             return idadePai;
         }
-
+        //Calculo idade mae
         private int calculaIdadeMae(bool prazoRegistro)
         {
             int idadeMae;
@@ -61,12 +62,12 @@ namespace Database
             }
             else
             {
-                String anoNascimento = Convert.ToString(r.DataRegistro);
+                String anoNascimento = Convert.ToString(rn.DataRegistro);
                 idadeMae = Convert.ToInt32(anoNascimento) - DateTime.Now.Year;
             }
             return idadeMae;
         }
-
+        //Retorna o id dos parentes para cadastro no banco de dados
         public int idParentesco(String tipo_parente)
         {
             if(tipo_parente == "Pai")
@@ -79,6 +80,7 @@ namespace Database
             }
         }
 
+        //Getters e Setters
         public string Nome { get => nome; set => nome = value; }
         public string Data_nascimento { get => data_nascimento; set => data_nascimento = value; }
         public string Naturalidade { get => naturalidade; set => naturalidade = value; }

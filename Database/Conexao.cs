@@ -25,38 +25,7 @@ namespace Database
             cmd = new NpgsqlCommand();
         }
 
-        public Parentesco consultaTeste()
-        {
-            try
-            {
-                String connstring = String.Format("Server=localhost;Port=5432;username=postgres;password=123;database=Bercario");
-                NpgsqlConnection conecta;
-                NpgsqlCommand cmd;
-                string sql = null;
-                conecta = new NpgsqlConnection(connstring);
-                conecta.Open();
-                sql = "SELECT p.nome, p.data_nascimento, p.idade, u.estado, n.cidade FROM Parentes AS p INNER JOIN uf AS u ON p.id_uf = u.id INNER JOIN naturalidade AS n ON p.id_naturalidade = n.id WHERE nome = 'Angelica';";
-
-                //sql = "SELECT nome FROM Parentes WHERE nome = 'Angelica';";
-                cmd = new NpgsqlCommand(sql, conecta);
-                NpgsqlDataReader reader = cmd.ExecuteReader();
-                reader.Read();
-                Parentesco p = new Parentesco();
-                //p.NomePai = reader.GetString(0);
-                //p.DtNascimentoPai = Convert.ToDateTime(reader.GetString(1));
-               // p.IdadePai = Convert.ToInt32(reader.GetString(2));
-               // p.UfPai = reader.GetString(3);
-               // p.NaturalidadePai = reader.GetString(4);
-                conecta.Close();
-                return p;
-            }
-            catch(Exception ex)
-            {   
-                Console.WriteLine("Erro:", ex);
-            }
-            return null;
-        }
-
+        //Preenche uma DataTable para inserção das cidades no cboNaturalidade
         public DataTable preencheCidades()
         {
             conecta.Open();
@@ -70,6 +39,7 @@ namespace Database
             return dt;
         }
 
+        //Relização do cadastro de recem nascidos
         public void cadastrarRN(RecemNascido rn)
         {        
             conecta.Open();
@@ -85,6 +55,7 @@ namespace Database
             conecta.Close();            
         }
 
+        //Cadastro das informações necessárias no Livro("A, C AUX") correspondente
         public void cadastrarLivroRegistro(Livro_Registro livro)
         {
             conecta.Open();
@@ -99,6 +70,7 @@ namespace Database
             conecta.Close();
         }
 
+        //Cadastro dos parentes
         public void cadastrarParente(Parentesco parente)
         {
             conecta.Open();
@@ -115,6 +87,7 @@ namespace Database
             conecta.Close();
         }
 
+        //Preenchimento do DataTable para consulta e exibição de recem nascidos
         public DataTable consultaNomeRN(String pesquisa)
         {
             try
@@ -136,13 +109,14 @@ namespace Database
             }
         }
 
-        public object consultaDnvDo(String pesquisa)
+        //Realização de consultas de DNV ou DO
+        public DataTable consultaDnvDo(String pesquisa)
         {
             try
             {
                 conecta.Open();
                 cmd.Connection = conecta;
-                cmd.CommandText = "select * from pesquisaNomeRN(@_pesquisa);";
+                cmd.CommandText = "select * from pesquisaDnvDo(@_pesquisa);";
                 cmd.Parameters.Add(new NpgsqlParameter("@_pesquisa", pesquisa));
                 cmd.CommandType = CommandType.Text;
                 NpgsqlDataAdapter da = new NpgsqlDataAdapter(cmd);
@@ -159,7 +133,8 @@ namespace Database
             }
         }
 
-        public object consultaParentesco(String pesquisa)
+        //Consulta por parentesco
+        public DataTable consultaParentesco(String pesquisa)
         {
             try
             {

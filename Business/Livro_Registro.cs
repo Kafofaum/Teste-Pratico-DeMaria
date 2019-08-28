@@ -28,6 +28,7 @@ namespace Database
             this.IdTipoLivro = idLivro(nomeLivroRegistro);
         }
 
+        //Retorta o id correspondente ao livro para inserção no banco de dados
         public int idLivro(String tipo)
         {
             int id;
@@ -42,6 +43,7 @@ namespace Database
             return id;
         }
 
+        //Getters e Setters
         public string NomeLivroRegistro { get => nomeLivroRegistro; set => nomeLivroRegistro = value; }
         public int NumeroLivro { get => numeroLivro; set => numeroLivro = value; }
         public int NumeroPagina { get => numeroPagina; set => numeroPagina = value; }

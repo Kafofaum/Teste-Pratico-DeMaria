@@ -21,8 +21,11 @@ namespace Desafio_DeMaria
         public ViewCadastro()
         {            
             InitializeComponent();
+
+            //Inicializa a conexao com o banco
             conexao = new Conexao();
-            lblDate.Text = DateTime.Now.Date.ToShortDateString();
+            lblDate.Text = DateTime.Now.Date.ToShortDateString(); //Insere a data atual na label
+            //Preenche as a cboNaturalidade com as cidades já cadastradas no banco de dados (evitar repetições)
             DataTable dt = conexao.preencheCidades();
             cboNaturalidadeMae.DisplayMember = "cidade";
             cboNaturalidadeMae.DataSource = dt;
@@ -41,22 +44,24 @@ namespace Desafio_DeMaria
             {
                 RecemNascido rn = new RecemNascido();
                 if (VerificaCamposPreenchidos())
-                { //ARRUMAR A PORRA DOS COMBO BOX AAAAAAAAAA
+                { 
                     if (rn.validaDnvDo(txtNumeroDNVDO.Text, Convert.ToString(cboLivroRegistro.SelectedItem)))
                     {
                         conexao = new Conexao();
+                        //Cadastro do Recem Nascido
                         rn = getDadosRN();
                         conexao.cadastrarRN(rn);
                         livro = getDadosLivro();
                         conexao.cadastrarLivroRegistro(livro);
 
-                        parente = getDadosParente("Mae");
+                        //Cadastro de parentesco do RN
+                        parente = getDadosParente("Mae"); //Cadastra MAE
+                        conexao.cadastrarParente(parente);
+                        parente = getDadosParente("Pai"); //Cadastra PAI
                         conexao.cadastrarParente(parente);
 
-                        parente = getDadosParente("Pai");
-                        conexao.cadastrarParente(parente);
                         MessageBox.Show("Cadastrado com Sucesso!");
-                        ClearForm(this);
+                        ClearForm(this); //Limpa form após cadastrar com sucesso
                     }
                     else
                     {
@@ -74,6 +79,7 @@ namespace Desafio_DeMaria
             
         }
 
+        //Método para limpar o form
         public static void ClearForm(System.Windows.Forms.Control parent)
         {
             foreach (System.Windows.Forms.Control ctrControl in parent.Controls)
@@ -119,15 +125,17 @@ namespace Desafio_DeMaria
             }
         }
 
+        //Verifica o preenchimento dos campos
         private bool VerificaCamposPreenchidos()
         {
-            if (txtNumeroDNVDO.Text.Equals("") || txtNomeRN.Text.Equals(""))
+            if (txtNumeroDNVDO.Text.Equals("") || txtNomeRN.Text.Equals("") || txtNomePai.Text.Equals("") || txtNomeMae.Text.Equals(""))
             {
                 return false;
             }
             return true;
         }
 
+        //Insere os dados do form no objeto RecemNascido
         private RecemNascido getDadosRN()
         {
             rn = new RecemNascido(
@@ -140,6 +148,7 @@ namespace Desafio_DeMaria
             return rn;
         }
 
+        //Insere dados no obj Livro_Registro
         private Livro_Registro getDadosLivro()
         {
             livro = new Livro_Registro(
@@ -150,6 +159,7 @@ namespace Desafio_DeMaria
             return livro;
         }
         
+        //Insere dados no obj Parentesco
         public Parentesco getDadosParente(String tipo)
         {          
            
@@ -177,11 +187,7 @@ namespace Desafio_DeMaria
             
         }
 
-        private void btnTelaCadastro_Click(object sender, EventArgs e)
-        {
-
-        }
-
+        //Método de Consulta
         private void btnConsulta_Click(object sender, EventArgs e)
         {
             dtGridConsulta.DataSource = null;
@@ -215,6 +221,7 @@ namespace Desafio_DeMaria
             }
         }
 
+        //Impedir que o usuario digite em ComboBox
         private void cboLivroRegistro_KeyPress(object sender, KeyPressEventArgs e)
         {
             e.Handled = true;
