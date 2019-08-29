@@ -38,6 +38,7 @@ namespace Desafio_DeMaria
             Application.Exit();
         }
 
+        //Botão Salvar -> métodos de cadastro
         private void btnSalvar_Click(object sender, EventArgs e)
         {
             try
@@ -192,7 +193,7 @@ namespace Desafio_DeMaria
         {
             dtGridConsulta.DataSource = null;
 
-            if (cboParametroPesquisa.Text != "" && txtPesquisa.Text != "")
+            if (cboParametroPesquisa.Text != "" && txtPesquisa.Text != "") //Confere se o campo de pesquisa e tipo de pesquisa estão preenchidos
             {
                 conexao = new Conexao();
                 if (cboParametroPesquisa.Text == "Nome RN")
