@@ -98,7 +98,6 @@ begin
 end
 $$
 language plpgsql;
-DROP FUNCTION pesquisaparente(character varying)
 --====================================================================================================================
 --=======================================Função de consulta Recem Nascido POR NOME====================================
 CREATE OR REPLACE FUNCTION pesquisaNomeRN(_pesquisa varchar(20))
