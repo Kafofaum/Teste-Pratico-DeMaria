@@ -1,3 +1,4 @@
+
 CREATE SCHEMA public
     AUTHORIZATION postgres;
 
@@ -28,6 +29,7 @@ insert into tipo_livro(descricao) values('A'),('C AUX');
 CREATE TABLE IF NOT EXISTS Recem_Nascido (
 	ID SERIAL PRIMARY KEY NOT NULL,
 	Nome VARCHAR(50) NOT NULL,
+	Data_Registro VARCHAR(50) NOT NULL,
 	Data_Nascimento varchar(20) NOT NULL,
 	Hora_Nascimento VARCHAR(10),
 	DNVDO VARCHAR(20),
@@ -71,7 +73,6 @@ CREATE TABLE IF NOT EXISTS Parentes (
 	FOREIGN KEY(ID_Parentesco) REFERENCES Grau_Parentesco (ID),
 	FOREIGN KEY(ID_Rn) REFERENCES Recem_Nascido (ID)
 );
-
 ALTER TABLE Recem_Nascido ADD FOREIGN KEY(ID_Sexo) REFERENCES Sexo (ID);
 --===================================================================================================================
 --============================FUNÇÕES================================================================================
@@ -100,9 +101,11 @@ $$
 language plpgsql;
 --====================================================================================================================
 --=======================================Função de consulta Recem Nascido POR NOME====================================
+
 CREATE OR REPLACE FUNCTION pesquisaNomeRN(_pesquisa varchar(20))
 returns table(
 	Nome varchar(50),
+	Data_Registro varchar(10),
 	Data_Nascimento varchar(10),
 	Hora_Nascimento varchar(10),
 	Sexo varchar(10),
@@ -117,7 +120,7 @@ returns table(
 $$
 begin
 	return query
-	SELECT r.nome, r.data_nascimento, r.hora_nascimento,  s.descricao, tl.descricao, l.numero_livro,l.numero_pagina, l.numero_registro, r.dnvdo, p.nome, p1.nome
+	SELECT r.nome, r.data_registro, r.data_nascimento, r.hora_nascimento,  s.descricao, tl.descricao, l.numero_livro,l.numero_pagina, l.numero_registro, r.dnvdo, p.nome, p1.nome
 	FROM Recem_Nascido AS r
 	INNER JOIN Sexo AS s ON r.id_sexo = s.id
 	INNER JOIN livro AS l on l.id_rn = r.id
@@ -134,6 +137,7 @@ language plpgsql;
 CREATE OR REPLACE FUNCTION pesquisaDnvDo(_pesquisa varchar(20))
 returns table(
 	Nome varchar(50),
+	Data_Registro varchar(10),
 	Data_Nascimento varchar(10),
 	Hora_Nascimento varchar(10),
 	Sexo varchar(10),
@@ -148,7 +152,7 @@ returns table(
 $$
 begin
 	return query
-	SELECT r.nome, r.data_nascimento, r.hora_nascimento,  s.descricao, tl.descricao, l.numero_livro,l.numero_pagina, l.numero_registro, r.dnvdo, p.nome, p1.nome
+	SELECT r.nome, r.data_registro, r.data_nascimento, r.hora_nascimento,  s.descricao, tl.descricao, l.numero_livro,l.numero_pagina, l.numero_registro, r.dnvdo, p.nome, p1.nome
 	FROM Recem_Nascido AS r
 	INNER JOIN Sexo AS s ON r.id_sexo = s.id
 	INNER JOIN livro AS l on l.id_rn = r.id
@@ -161,12 +165,12 @@ $$
 language plpgsql;
 --==================================================================================================================================================
 --=================================================INSERT Recem Nascido ++ LIVRO====================================================================
-CREATE OR REPLACE FUNCTION insertRecemNascido(_nome VARCHAR(50), _dt_nascimento varchar(20), _hora_nascimento VARCHAR(20), _id_sexo INT, _DNVDO VARCHAR(20))
+CREATE OR REPLACE FUNCTION insertRecemNascido(_nome VARCHAR(50), _dt_registro varchar(10), _dt_nascimento varchar(20), _hora_nascimento VARCHAR(20), _id_sexo INT, _DNVDO VARCHAR(20))
 RETURNS VOID AS
 $$
 begin
-	INSERT INTO recem_nascido (nome, data_nascimento, hora_nascimento, id_sexo, DNVDO)
-	SELECT _nome, _dt_nascimento, _hora_nascimento, _id_sexo, _DNVDO
+	INSERT INTO recem_nascido (nome, data_registro, data_nascimento, hora_nascimento, id_sexo, DNVDO)
+	SELECT _nome, _dt_registro, _dt_nascimento, _hora_nascimento, _id_sexo, _DNVDO
 	WHERE NOT EXISTS (
 	SELECT nome FROM recem_nascido WHERE nome = _nome
 	);

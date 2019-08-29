@@ -43,9 +43,10 @@ namespace Database
         public void cadastrarRN(RecemNascido rn)
         {        
             conecta.Open();
-            sql = "SELECT insertRecemNascido(@_nome, @_data_nascimento, @_hora_nascimento, @_id_sexo, @_DNVDO);";
+            sql = "SELECT insertRecemNascido(@_nome, @_data_registro, @_data_nascimento, @_hora_nascimento, @_id_sexo, @_DNVDO);";
             cmd = new NpgsqlCommand(sql, conecta);
-            cmd.Parameters.Add(new NpgsqlParameter("@_nome", rn.NomeRN));                                 
+            cmd.Parameters.Add(new NpgsqlParameter("@_nome", rn.NomeRN));
+            cmd.Parameters.Add(new NpgsqlParameter("@_data_registro", rn.DataRegistro));
             cmd.Parameters.Add(new NpgsqlParameter("@_data_nascimento", rn.DataNascimentoRN));
             cmd.Parameters.Add(new NpgsqlParameter("@_hora_nascimento", rn.HoraNascimentoRN));
             cmd.Parameters.Add(new NpgsqlParameter("@_id_sexo", rn.IdsexRN));
@@ -105,6 +106,7 @@ namespace Database
                 return dt;
             }
             catch (Exception ex) {
+                MessageBox.Show("Erro na consulta de recem nascido" + ex);
                 return null;
             }
         }
@@ -152,6 +154,7 @@ namespace Database
             }
             catch (Exception ex)
             {
+                MessageBox.Show("Erro na consulta de recem nascido" + ex);
                 return null;
             }
         }

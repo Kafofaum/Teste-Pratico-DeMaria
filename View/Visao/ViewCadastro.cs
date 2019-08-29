@@ -171,7 +171,8 @@ namespace Desafio_DeMaria
                 cboNaturalidadeMae.Text,
                 cboUfMae.Text,
                 tipo,
-                chkPrazo.Checked);
+                chkPrazo.Checked,
+                mskTxtDataRegistro.Text);
                 return parente;
             }
             else
@@ -182,7 +183,8 @@ namespace Desafio_DeMaria
                 cboNaturalidadePai.Text,
                 cboUfPai.Text,
                 tipo,
-                chkPrazo.Checked);
+                chkPrazo.Checked,
+                mskTxtDataRegistro.Text);
                 return parente;
             }
             
