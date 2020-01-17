@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS tb_cidades(
 	ID SERIAL PRIMARY KEY NOT NULL,
 	DESCRICAO VARCHAR(10),
 	UNIQUE(DESCRICAO)
-)
+);
 
 CREATE TABLE IF NOT EXISTS tb_condominio (     -- REGISTRO DE DADOS DO CONDOMINIO
 	ID SERIAL PRIMARY KEY NOT NULL,
@@ -163,19 +163,20 @@ end
 $$
 language plpgsql;
 
-CREATE OR REPLACE FUNCTION insertCondominio(_Nome VARCHAR(50), _Uf INT, _Cidade INT, _Rua VARCHAR(50), _Numero VARCHAR(50), _Capacidade VARCHAR(50), _CNPJ VARCHAR(50), _Email VARCHAR(50), _Telefone VARCHAR(50))
+CREATE OR REPLACE FUNCTION insertCondominio(_Nome VARCHAR(50), _Uf INT, _Cidade INT, _Rua VARCHAR(50), _Numero VARCHAR(50), _Capacidade INT, _CNPJ VARCHAR(50), _Email VARCHAR(50), _Telefone VARCHAR(50))
 RETURNS VOID AS
 $$
 begin
-	INSERT INTO tb_condominio (_Nome, _Uf, _Cidade, _Rua, _Numero, _Capacidade, _CNPJ, _Email, _Telefone)
-	SELECT _Nome, _Uf, _Cidade, _id_uf, _Rua, _Numero, _Capacidade, _CNPJ, _Email, _Telefone
+	INSERT INTO tb_condominio (Nome, ID_Uf, Cidade, Rua, Numero, Capacidade, CNPJ, Email, Telefone)
+	SELECT _Nome, _Uf, _Cidade, _Rua, _Numero, _Capacidade, _CNPJ, _Email, _Telefone
 	WHERE NOT EXISTS (
-    SELECT Nome FROM tb_condominio WHERE Nome = _Nome
+	SELECT Nome FROM tb_condominio WHERE Nome = _Nome
+	);
 end
 $$
 language plpgsql;
 
-CREATE OR REPLACE FUNCTION CadastrarCondominio(_Nome VARCHAR(50), _Uf INT, _Cidade VARCHAR(50), _Rua VARCHAR(50), _Numero VARCHAR(50), _Capacidade VARCHAR(50), _CNPJ VARCHAR(50), _Email VARCHAR(50), _Telefone VARCHAR(50))
+CREATE OR REPLACE FUNCTION CadastrarCondominio(_Nome VARCHAR(50), _Uf VARCHAR(50), _Cidade VARCHAR(50), _Rua VARCHAR(50), _Numero VARCHAR(50), _Capacidade INT, _CNPJ VARCHAR(50), _Email VARCHAR(50), _Telefone VARCHAR(50))
 RETURNS VOID AS	
 $$
 begin
@@ -184,3 +185,5 @@ begin
 end
 $$
 language plpgsql;
+
+SELECT CadastrarCondominio('teste', 'SP', 'São José', 'Eliza', '174', 100, '64874631', 'a@gmail.com', '12981076666');
