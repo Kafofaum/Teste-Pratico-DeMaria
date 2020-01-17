@@ -1,233 +1,186 @@
+-- Database: "Piovesan"
 
-CREATE SCHEMA public
-    AUTHORIZATION postgres;
+DROP DATABASE "Piovesan";
 
-COMMENT ON SCHEMA public
-    IS 'Registro de Recem Nascidos';
+CREATE DATABASE "Piovesan"
+  WITH OWNER = postgres
+       ENCODING = 'UTF8'
+       TABLESPACE = pg_default
+       LC_COLLATE = 'Portuguese_Brazil.1252'
+       LC_CTYPE = 'Portuguese_Brazil.1252'
+       CONNECTION LIMIT = -1;
 
-GRANT ALL ON SCHEMA public TO postgres;
-
-GRANT ALL ON SCHEMA public TO PUBLIC;
---==================Tabela de Estados=========================
-CREATE TABLE IF NOT EXISTS UF (
+CREATE TABLE IF NOT EXISTS tb_permissions(
 	ID SERIAL PRIMARY KEY NOT NULL,
-	Estado VARCHAR(20) UNIQUE NOT NULL
+	DESCRICAO VARCHAR(30) NOT NULL,
+	NIVEL INT NOT NULL					-- NIVEL DE ACESSO NO SISTEMA
 );
-INSERT INTO Uf(estado) VALUES ('AC'),('AL'),('AM'),('AP'),('BA'),('CE'),('DF'),('ES'),('GO'),('MA'),('MG'),('MS'),('MT'),('PA'),('PB'),('PE'),('PI'),('PR'),('RJ'),('RN'),('RO'),('RR'),('RS'),('SC'),('SE'),('SP'),('TO');
---==================Tabela nome das cidades 'arruar'===========
-CREATE TABLE IF NOT EXISTS Naturalidade (
+INSERT INTO tb_permissions(DESCRICAO, NIVEL) VALUES('DEV','0'); -- PERMISSÕES DE DEV (GERAL)
+INSERT INTO tb_permissions(DESCRICAO, NIVEL) VALUES('SINDICO','1'); -- TESTE PARA USUÁRIO COM ACESSO RESTRITO
+INSERT INTO tb_permissions(DESCRICAO, NIVEL) VALUES('USER','2'); -- TESTE PARA USUÁRIO COM ACESSO RESTRITO
+
+CREATE TABLE IF NOT EXISTS tb_users_config(
+	ID SERIAL PRIMARY KEY NOT NULL,		-- ID DO MORADOR CADASTRADO (QUE SERÁ ACHADO BASEADO EM SEU CPF! CPF > ID > ID(USER_CONFIG))
+	PASS VARCHAR(30) NOT NULL,			-- SENHA DE LOGIN (ACHAR UM MÉTODO SEGURO PARA ARMAZENAR SENHAS)
+	ID_permissions INT NOT NULL,		-- QUAL O NIVEL DE PERMISSÃO NO SISTEMA
+	FOREIGN KEY(ID_permissions) REFERENCES tb_permissions (ID)
+);
+
+CREATE TABLE IF NOT EXISTS tb_uf(
 	ID SERIAL PRIMARY KEY NOT NULL,
-	Cidade VARCHAR(20) UNIQUE NOT NULL
+	DESCRICAO VARCHAR(10),				-- PADRONIZAR OS ESTADOS PARA EVITAR A REPETIÇÃO
+	UNIQUE(DESCRICAO)
 );
---=================Tipo do livro de registros A / C AUX==========
-CREATE TABLE IF NOT EXISTS Tipo_Livro (
+
+INSERT INTO tb_uf (DESCRICAO)VALUES
+('RO'),
+('AC'),
+('AM'),
+('RR'),
+('PA'),
+('AP'),
+('TO'),
+('MA'),
+('PI'),
+('CE'),
+('RN'),
+('PB'),
+('PE'),
+('AL'),
+('SE'),
+('BA'),
+('MG'),
+('ES'),
+('RJ'),
+('SP'),
+('PR'),
+('SC'),
+('RS'),
+('MS'),
+('MT'),
+('GO'),
+('DF');
+
+CREATE TABLE IF NOT EXISTS tb_cidades(
 	ID SERIAL PRIMARY KEY NOT NULL,
-	Descricao VARCHAR(10) NOT NULL
-);
-insert into tipo_livro(descricao) values('A'),('C AUX');
---============================Tabela de Recem Nascidos===========
-CREATE TABLE IF NOT EXISTS Recem_Nascido (
+	DESCRICAO VARCHAR(10),
+	UNIQUE(DESCRICAO)
+)
+
+CREATE TABLE IF NOT EXISTS tb_condominio (     -- REGISTRO DE DADOS DO CONDOMINIO
 	ID SERIAL PRIMARY KEY NOT NULL,
 	Nome VARCHAR(50) NOT NULL,
-	Data_Registro VARCHAR(50) NOT NULL,
-	Data_Nascimento varchar(20) NOT NULL,
-	Hora_Nascimento VARCHAR(10),
-	DNVDO VARCHAR(20),
-	ID_Sexo INT NOT NULL
+	ID_uf INT NOT NULL,
+	Cidade VARCHAR(50) NOT NULL,
+	Rua VARCHAR(50) NOT NULL,
+	Numero VARCHAR(50) NOT NULL,
+	Capacidade INT NOT NULL,
+	CNPJ VARCHAR(30) NOT NULL,
+	Email VARCHAR(50) NOT NULL,
+	Telefone VARCHAR(20) NOT NULL,
+	FOREIGN KEY(ID_uf) REFERENCES tb_uf(ID)
 );
---=======================Livro de Registros=====================
-CREATE TABLE IF NOT EXISTS Livro (
-	ID SERIAL PRIMARY KEY NOT NULL,
-	ID_Tipo INT NOT NULL,
-	ID_Rn INT NOT NULL,
-	Numero_Pagina INT NOT NULL,
-	Numero_Registro INT NOT NULL,
-	Numero_Livro INT NOT NULL,
-	FOREIGN KEY(ID_Tipo) REFERENCES Tipo_Livro (ID),
-	FOREIGN KEY(ID_Rn) REFERENCES Recem_Nascido (ID)
-);
---============================Padronização Sexo==============
-CREATE TABLE IF NOT EXISTS Sexo (
-	ID SERIAL PRIMARY KEY NOT NULL,
-	Descricao VARCHAR(10) NOT NULL
-);
-INSERT INTO sexo(descricao) VALUES ('Masculino'),('Feminino');
---=========================Padronização Grau de parentesco=========
-CREATE TABLE IF NOT EXISTS Grau_Parentesco (
-	ID SERIAL PRIMARY KEY,
-	Tipo VARCHAR(20) NOT NULL
-);
-INSERT INTO grau_parentesco(Tipo) VALUES ('Pai'),('Mae');
---===========================Tabela de Parentes=================
-CREATE TABLE IF NOT EXISTS Parentes (
+	
+CREATE TABLE IF NOT EXISTS tb_condomino(       -- REGISTRO DOS CONDOMINOS
 	ID SERIAL PRIMARY KEY NOT NULL,
 	Nome VARCHAR(50) NOT NULL,
-	Data_Nascimento VARCHAR(20) NOT NULL,
-	Idade INT NOT NULL,
-	ID_Uf INT NOT NULL,
-	ID_Naturalidade INT NOT NULL,
-	ID_Parentesco INT NOT NULL,
-	ID_Rn INT NOT NULL,
-	FOREIGN KEY(ID_Uf) REFERENCES UF (ID),
-	FOREIGN KEY(ID_Naturalidade) REFERENCES Naturalidade (ID),
-	FOREIGN KEY(ID_Parentesco) REFERENCES Grau_Parentesco (ID),
-	FOREIGN KEY(ID_Rn) REFERENCES Recem_Nascido (ID)
+	Bloco VARCHAR(10) NOT NULL,
+	Numero VARCHAR(10) NOT NULL,
+	Complemento VARCHAR(50) NOT NULL,
+	CPF VARCHAR(15) NOT NULL,		-- SERÁ UTILIZADO O CPF PARA REALIZAR LOGIN!
+	RG VARCHAR(15) NOT NULL,
+	Telefone VARCHAR(20) NOT NULL,
+	Email VARCHAR(50) NOT NULL,
+	ID_Condominio INT NOT NULL,
+	ID_User_Config INT NOT NULL,
+	FOREIGN KEY(ID_Condominio) REFERENCES tb_condominio (ID),
+	FOREIGN KEY(ID_User_Config) REFERENCES tb_users_config(ID)
 );
-ALTER TABLE Recem_Nascido ADD FOREIGN KEY(ID_Sexo) REFERENCES Sexo (ID);
---===================================================================================================================
---============================FUNÇÕES================================================================================
---===================================================================================================================
---========================CONSULTA PARENTES==========================================================================
-CREATE OR REPLACE FUNCTION pesquisaParente(_pesquisa varchar(20))
-returns table(
-	Nome varchar(50),
-	Data_nascimento varchar(20),
-	Idade INT,
-	Uf varchar(10),
-	Naturalidade varchar(10),
-	Filho varchar(50)
-)as
-$$
-begin
-	return query
-	SELECT pa.nome, pa.data_nascimento, pa.idade, u.estado, n.cidade, r.nome
-	FROM Parentes AS pa
-	INNER JOIN uf AS u ON pa.id_uf = u.id
-	INNER JOIN naturalidade AS n ON pa.id_naturalidade = n.id
-	INNER JOIN recem_nascido AS r ON pa.id_rn = r.id
-	WHERE pa.nome like '%' || _pesquisa || '%';
-end
-$$
-language plpgsql;
---====================================================================================================================
---=======================================Função de consulta Recem Nascido POR NOME====================================
+--INSERT INTO tb_condomino(Nome, Bloco, Numero, Complemento, CPF, RG, Telefone, Email, ID_condominio)
+--VALUES ('Gabriel Piovesan de Luna Cabrera', '1','10','5° Andar', '462.986.768-64', '38.142.721-3', '(12)98107-6884', 'bieldeluna@gmail.com', 9);
 
-CREATE OR REPLACE FUNCTION pesquisaNomeRN(_pesquisa varchar(20))
-returns table(
-	Nome varchar(50),
-	Data_Registro varchar(10),
-	Data_Nascimento varchar(10),
-	Hora_Nascimento varchar(10),
-	Sexo varchar(10),
-	Tipo_Livro varchar(10),
-	Numero_Livro int,
-	Numero_Pagina int,
-	Numero_Registro int,
-	DnvDo varchar(20),
-	Pai varchar(50),
-	Mae varchar(50)
-)as
-$$
-begin
-	return query
-	SELECT r.nome, r.data_registro, r.data_nascimento, r.hora_nascimento,  s.descricao, tl.descricao, l.numero_livro,l.numero_pagina, l.numero_registro, r.dnvdo, p.nome, p1.nome
-	FROM Recem_Nascido AS r
-	INNER JOIN Sexo AS s ON r.id_sexo = s.id
-	INNER JOIN livro AS l on l.id_rn = r.id
-	INNER JOIN tipo_livro AS tl ON tl.id = l.id_tipo
-	INNER JOIN Parentes AS p ON r.id = p.id_rn and p.id_parentesco = 1
-	INNER JOIN Parentes as p1 ON r.id = p1.id_rn and p1.id_parentesco = 2	
-	WHERE r.nome like '%' || _pesquisa || '%';
-end
-$$
-language plpgsql;
+CREATE TABLE IF NOT EXISTS tb_asmb_config(	-- CONFIGURAÇÕES GERAIS DA ASSEMBLEIA
+	Data_Asmb DATE NOT NULL,		-- A DATA QUE IRÁ SER ABERTA AS VOTAÇÕES
+	Horario VARCHAR(10) NOT NULL,	
+	Nome_representante VARCHAR(50) NOT NULL, -- NOME DO REPRESENTANTE DA ASSEMBLEIA? TOPICO?
+	Notificacao_Ativa BOOLEAN NOT NULL, 		-- DISPARAR NOTIFICAÇÃO NOS CELULARES DOS CONDOMINOS?
+	Notificacao_Detalhes VARCHAR(50) NOT NULL	-- DESCRIÇÃO PARA APARECER NA NOTIFICAÇÃO
+);
 
---====================================================================================================================================
---=================================================PESQUISA DE RN POR DNV / DO========================================================
-CREATE OR REPLACE FUNCTION pesquisaDnvDo(_pesquisa varchar(20))
-returns table(
-	Nome varchar(50),
-	Data_Registro varchar(10),
-	Data_Nascimento varchar(10),
-	Hora_Nascimento varchar(10),
-	Sexo varchar(10),
-	Tipo_Livro varchar(10),
-	Numero_Livro int,
-	Numero_Pagina int,
-	Numero_Registro int,
-	DnvDo varchar(20),
-	Pai varchar(50),
-	Mae varchar(50)
-)as
-$$
-begin
-	return query
-	SELECT r.nome, r.data_registro, r.data_nascimento, r.hora_nascimento,  s.descricao, tl.descricao, l.numero_livro,l.numero_pagina, l.numero_registro, r.dnvdo, p.nome, p1.nome
-	FROM Recem_Nascido AS r
-	INNER JOIN Sexo AS s ON r.id_sexo = s.id
-	INNER JOIN livro AS l on l.id_rn = r.id
-	INNER JOIN tipo_livro AS tl ON tl.id = l.id_tipo
-	INNER JOIN Parentes AS p ON r.id = p.id_rn and p.id_parentesco = 1
-	INNER JOIN Parentes as p1 ON r.id = p1.id_rn and p1.id_parentesco = 2	
-	WHERE r.dnvdo = _pesquisa;
-end
-$$
-language plpgsql;
---==================================================================================================================================================
---=================================================INSERT Recem Nascido ++ LIVRO====================================================================
-CREATE OR REPLACE FUNCTION insertRecemNascido(_nome VARCHAR(50), _dt_registro varchar(10), _dt_nascimento varchar(20), _hora_nascimento VARCHAR(20), _id_sexo INT, _DNVDO VARCHAR(20))
+CREATE TABLE IF NOT EXISTS tb_asmb_config_voto(
+	ID SERIAL PRIMARY KEY NOT NULL,
+	DESCRICAO VARCHAR(20) NOT NULL, --DESCRIÇÃO QUE IRÁ APARECER NA TELA DE CONF DE TÓPICO (EX: MUDAR FACHADA DO CONDOMINIO NECESSITA DE 100% DE VOTOS A FAVOR)
+	PercentAprovacao INT NOT NULL --PORCENTAGEM DE VOTOS NECESSÁRIOS PARA A APROVAÇÃO (CADA TIPO DE TÓPICO NECESSITA DE UMA PORCENTAGEM DIFERENTE PARA SER APROVADO)
+);
+
+CREATE TABLE IF NOT EXISTS tb_asmb_topico( 	-- TÓPICOS A SEREM VOTADOS PELOS CONDOMINOS
+	ID SERIAL PRIMARY KEY NOT NULL,
+	ID_condominio INT NOT NULL,			-- TÓPICO DE QUAL CONDOMINIO
+	Titulo VARCHAR(50) NOT NULL,		-- TITULO DO TÓPICO
+	Descricao VARCHAR(50) NOT NULL,		-- DESCRIÇÃO DO TÓPICO (PORQUE TAL QUESTÃO ESTÁ EM VOTAÇÃO ETC)
+	ID_asbm_config_voto INT NOT NULL,	-- COMO ESTÁ CONFIGURADO A PORCENTAGEM DE VOTOS P/ APROVAÇÃO DO TÓPICO
+	VT_FAVOR INT,						-- \\\\
+	VT_CONTRA INT, 						-- CONTAGEM DE VOTOS
+	VT_NEUTRO INT,						-- ////
+	FOREIGN KEY(ID_condominio) REFERENCES tb_condominio (ID),
+	FOREIGN KEY(ID_asbm_config_voto) REFERENCES tb_asmb_config_voto(ID)
+);
+
+
+CREATE TABLE IF NOT EXISTS tb_asmb_hist_topico(		-- HISTORICO DE VOTAÇÕES PARA CONTROLE DE VOTOS
+	ID SERIAL PRIMARY KEY NOT NULL,
+	ID_condominio INT NOT NULL,			-- PERTENCE A QUAL CONDOMINIO
+	ID_topico INT NOT NULL,				-- \\\\
+	ID_condomino INT NOT NULL,			-- CONTROLE DE QUAL MORADOR VOTOU, QUAL TOPICO E QUAL VOTO FOI
+	ID_tipo_voto INT NOT NULL,			-- ////
+	Comentario VARCHAR(100),			-- PARA COMENTARIOS DO COMDOMINO SOBRE O TÓPICO
+	FOREIGN KEY(ID_condominio) REFERENCES tb_condominio (ID),
+	FOREIGN KEY(ID_topico) REFERENCES tb_asmb_topico (ID),
+	FOREIGN KEY(ID_condomino) REFERENCES tb_condomino (ID)
+);
+
+CREATE TABLE IF NOT EXISTS tb_asmb_tipo_voto(		-- ASSIMILAÇÃO DE TIPO DE VOTOS
+	ID SERIAL PRIMARY KEY NOT NULL,
+	Descricao VARCHAR(15) NOT NULL
+);
+INSERT INTO tb_asmb_tipo_voto(Descricao) VALUES ('FAVOR');
+INSERT INTO tb_asmb_tipo_voto(Descricao) VALUES ('CONTRA');
+
+
+
+-- 					FUNÇÕES DO BANCO                    --
+
+CREATE OR REPLACE FUNCTION insertCidade(_Cidade VARCHAR(50))
 RETURNS VOID AS
 $$
 begin
-	INSERT INTO recem_nascido (nome, data_registro, data_nascimento, hora_nascimento, id_sexo, DNVDO)
-	SELECT _nome, _dt_registro, _dt_nascimento, _hora_nascimento, _id_sexo, _DNVDO
+	INSERT INTO tb_cidades (DESCRICAO)
+	SELECT _Cidade
 	WHERE NOT EXISTS (
-	SELECT nome FROM recem_nascido WHERE nome = _nome
+	SELECT DESCRICAO FROM tb_cidades WHERE DESCRICAO = _Cidade
 	);
 end
 $$
 language plpgsql;
---====================================================================================================================
---===============================================INSERT Livro=========================================================
-CREATE OR REPLACE FUNCTION insertLivro(_id_tipo INT, _n_pagina INT, _n_registro INT, _n_livro INT)
+
+CREATE OR REPLACE FUNCTION insertCondominio(_Nome VARCHAR(50), _Uf INT, _Cidade INT, _Rua VARCHAR(50), _Numero VARCHAR(50), _Capacidade VARCHAR(50), _CNPJ VARCHAR(50), _Email VARCHAR(50), _Telefone VARCHAR(50))
 RETURNS VOID AS
 $$
 begin
-	INSERT INTO livro (id_tipo, id_rn, numero_pagina, numero_registro, numero_livro)
-	SELECT _id_tipo, (SELECT MAX(ID) FROM Recem_Nascido), _n_pagina, _n_registro, _n_livro
+	INSERT INTO tb_condominio (_Nome, _Uf, _Cidade, _Rua, _Numero, _Capacidade, _CNPJ, _Email, _Telefone)
+	SELECT _Nome, _Uf, _Cidade, _id_uf, _Rua, _Numero, _Capacidade, _CNPJ, _Email, _Telefone
 	WHERE NOT EXISTS (
-    SELECT id_rn FROM livro WHERE id_rn = (SELECT MAX(ID) FROM Recem_Nascido)
-);
-end
-$$
-language plpgsql;
---=====================================================================================================================
---=============================================INSERT PARENTESCO=======================================================
-CREATE OR REPLACE FUNCTION insertParentesco(_nome VARCHAR(50), _dt_nascimento VARCHAR(20), _idade INT, _uf VARCHAR(50), _naturalidade VARCHAR(50), _id_parentesco INT)
-RETURNS VOID AS	
-$$
-begin
-	PERFORM insertNaturalidade(_naturalidade);
-	PERFORM insertParente(_nome, _dt_nascimento, _idade, (SELECT id FROM UF where estado = _uf), (SELECT id from naturalidade where cidade = _naturalidade), _id_parentesco, (SELECT MAX(ID) FROM Recem_Nascido));
-end
-$$
-language plpgsql;
---======================================================================================================================
---======================================================INSERT NATURALIDADE=============================================
-CREATE OR REPLACE FUNCTION insertNaturalidade(_naturalidade VARCHAR(50))
-RETURNS VOID AS
-$$
-begin
-	INSERT INTO naturalidade (cidade)
-	SELECT _naturalidade
-	WHERE NOT EXISTS (
-    SELECT cidade FROM naturalidade WHERE cidade = _naturalidade
-);
+    SELECT Nome FROM tb_condominio WHERE Nome = _Nome
 end
 $$
 language plpgsql;
 
---==================================================================================================================================
---============================================================INSERT PARENTE========================================================
-CREATE OR REPLACE FUNCTION insertParente(_nome VARCHAR(50), _dt_nascimento VARCHAR(20), _idade INT, _id_uf INT, _id_naturalidade INT, _id_parentesco INT, _id_rn INT)
-RETURNS VOID AS
+CREATE OR REPLACE FUNCTION CadastrarCondominio(_Nome VARCHAR(50), _Uf INT, _Cidade VARCHAR(50), _Rua VARCHAR(50), _Numero VARCHAR(50), _Capacidade VARCHAR(50), _CNPJ VARCHAR(50), _Email VARCHAR(50), _Telefone VARCHAR(50))
+RETURNS VOID AS	
 $$
 begin
-	INSERT INTO parentes (nome, data_nascimento, idade, id_uf, id_naturalidade, id_parentesco, id_rn)
-	SELECT _nome, _dt_nascimento, _idade, _id_uf, _id_naturalidade, _id_parentesco, _id_rn
-	WHERE NOT EXISTS (
-    SELECT nome FROM parentes WHERE nome = _nome
-);
+	PERFORM insertCidade(_Cidade);
+	PERFORM insertCondominio(_Nome, (SELECT id FROM tb_uf WHERE descricao = _Uf), (SELECT id from tb_cidades where descricao = _Cidade), _Rua, _Numero, _Capacidade, _CNPJ, _Email, _Telefone);
 end
 $$
 language plpgsql;
