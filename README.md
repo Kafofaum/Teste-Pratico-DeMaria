@@ -1,4 +1,4 @@
-# Teste prátido para vaga de Desenvolvedor C# - Júnior
+# Teste prático para vaga de Desenvolvedor C# - Júnior
 
 > Aprovado! :D
 
